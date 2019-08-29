@@ -1,0 +1,51 @@
+﻿@model ICollection<MailBoxSytem.Models.Parameters>
+
+@{
+    ViewBag.Title = "ListParameters";
+}
+
+<style>
+    table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    td, th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #dddddd;
+    }
+</style>
+<h2>ListParameters</h2>
+<a href="@Url.Action("CreateParameters",new { id =ViewBag.TemplateId})"> CreateParameters</a>
+
+
+<table>
+    <tr>
+        <th>Key</th>
+        <th>Description</th>
+        <th>ClassName</th>
+        <th>actions</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Key</td>
+            <td> @item.Description</td>
+            <td> @item.ClassName</td>
+            <td>
+                <a href="@Url.Action("DeleteTemplate",new {id=item.Id })"> DeleteTemplate</a>
+
+            </td>
+        </tr>
+
+    }
+</table>
+
+

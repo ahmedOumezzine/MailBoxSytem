@@ -1,0 +1,52 @@
+﻿@model ICollection<MailBoxSytem.Models.Template>
+
+@{
+    ViewBag.Title = "ListTemplates";
+}
+
+<style>
+    table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    td, th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #dddddd;
+    }
+</style>
+<h2>ListTemplates</h2>
+<a href="@Url.Action("CreateTemplate")"> CreateTemplate</a>
+
+
+<table>
+    <tr>
+        <th>Title</th>
+        <th>GroupBy</th>
+        <th>actions</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Title</td>
+            <td> @item.GroupBy</td>
+            <td>
+                <a href="@Url.Action("TemplateDetails",new {TemplateId=item.Id })"> TemplateDetails</a>
+                <a href="@Url.Action("ListParameters",new {id=item.Id })"> ListParameters</a>
+                <a href="@Url.Action("UpdateTemplate",new {id=item.Id })"> UpdateTemplate</a>
+                <a href="@Url.Action("DeleteTemplate",new {id=item.Id })"> DeleteTemplate</a>
+
+            </td>
+        </tr>
+ 
+    }
+</table>
+
+

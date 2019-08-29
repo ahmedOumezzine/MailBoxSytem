@@ -1,0 +1,181 @@
+﻿@model MailBoxSytem.Models.TemplateDetails
+@{
+    ViewBag.Title = "TemplateDetails";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <section id="loginForm">
+            @using (Html.BeginForm("TemplateDetails", "MailBox", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+            {
+                @Html.AntiForgeryToken()
+                <hr />
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                @Html.HiddenFor(x => x.Id)
+                @Html.HiddenFor(x => x.TemplateId)
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Subject, new { @class = "col-md-2 control-label" })
+                    <div class="col-md-10">
+                        @Html.TextBoxFor(m => m.Subject, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(m => m.Subject, "", new { @class = "text-danger" })
+                    </div>
+                </div>  
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Body, new { @class = "col-md-2 control-label" })
+                    <div class="col-md-10">
+                        <div data-bind="foreach: {data: templates, afterRender: makeDroppable } ">
+                            <div class="card">
+                                <div class="d-flex justify-content-between align-content-center">
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <textarea rows="10" name="Body" id="Body" style="height: auto" aria-label="Content" class="txtDropTarget form-control m-3" aria-describedby="Template Content" data-bind="textInput: content"></textarea>
+
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <div data-bind="html: content" class="m-3"></div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-content-center">
+                                    <ul class="dragList nav" data-bind="foreach: { data: $parent.tags, afterRender: $root.makeDraggable }">
+                                        <li data-bind="text: value" class="nav-item m-3 h5 move-pointer"></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+          
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <input type="submit" value="Create" class="btn btn-default" />
+                    </div>
+                </div>
+            }
+        </section>
+    </div>
+</div>
+
+
+
+<style>
+    .move-pointer {
+        cursor: move;
+    }
+</style>
+@section scripts{
+    @Scripts.Render("~/bundles/jqueryval")
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.2/knockout-debug.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.2/knockout-min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.3.7/js/tether.min.js"></script>
+    <script>
+    (function() {
+  'use strict';
+
+  var data = JSON.stringify({
+      "tags": [
+          @foreach (var Parameter in Model.Template.Parameters.Select((value, i) => new { i, value }))
+          {
+              @:{ 'id': " + @Parameter.i + ",'name': '+@Parameter.value.Key+','value': '{{@Parameter.value.Key}}','description': null},
+          }],
+    "templates": [{
+      "id": 1,
+      "key": "securitycode",
+      "description": null,
+      "content": "@Model.Body",
+      "subject": "@Model.Subject"
+    } ]
+  });
+
+  var Tag = function(id, name, value, description) {
+    var self = this;
+    self.id = ko.observable(id);
+    self.name = ko.observable(name);
+    self.value = ko.observable(value);
+    self.description = ko.observable(description);
+  };
+
+  var Template = function(id, key, description, content, subject, tags) {
+    var self = this;
+    self.id = ko.observable(id);
+    self.key = ko.observable(key);
+    self.description = ko.observable(description);
+    self.content = ko.observable(content);
+    self.subject = ko.observable(subject);
+  };
+
+  var ViewModel = function(data) {
+    var self = this;
+
+    self.templates = ko.observableArray(data.templates.map(function(item) {
+      return new Template(
+        item.id,
+        item.key,
+        item.description,
+        item.content,
+        item.subject
+      );
+    }));
+
+    self.tags = ko.observableArray(data.tags.map(function(item) {
+      return new Tag(
+        item.id,
+        item.name,
+        item.value,
+        item.description
+      );
+    }));
+
+    self.makeDraggable = function() {
+      $("li").draggable({
+        helper: 'clone'
+      });
+    };
+
+    self.makeDroppable = function(elements) {
+      $(".txtDropTarget").droppable({
+        accept: "li",
+        drop: function(ev, ui) {
+          $(this).insertAtCaret(ui.draggable.text()).change();
+        }
+      });
+    };
+
+
+    $.fn.insertAtCaret = function(myValue) {
+      return this.each(function() {
+        //IE support
+        if (document.selection) {
+          this.focus();
+          sel = document.selection.createRange();
+          sel.text = myValue;
+          this.focus();
+        }
+        //MOZILLA / NETSCAPE support
+        else if (this.selectionStart || this.selectionStart == '0') {
+          var startPos = this.selectionStart;
+          var endPos = this.selectionEnd;
+          var scrollTop = this.scrollTop;
+          this.value = this.value.substring(0, startPos) + myValue + this.value.substring(endPos, this.value.length);
+          this.focus();
+          this.selectionStart = startPos + myValue.length;
+          this.selectionEnd = startPos + myValue.length;
+          this.scrollTop = scrollTop;
+        } else {
+          this.value += myValue;
+          this.focus();
+        }
+      });
+    };
+  };
+
+  var viewModel = new ViewModel(ko.utils.parseJson(data) || []);
+  ko.applyBindings(viewModel);
+}());
+
+    </script>
+
+}
